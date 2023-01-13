@@ -1,0 +1,11 @@
+########
+# Directly changed in SPHINCSplus/params.h
+#PARAMS = sphincs-shake256-256s
+THASH = robust
+
+########
+CRYPTO_LIB = SPHINCSplus
+SRC += address.c randombytes.c merkle.c wots.c wotsx1.c utils.c utilsx1.c fors.c sign.c fips202.c hash_shake256.c thash_shake256_$(THASH).c
+CDEFS += -DSPHINCSplus
+VPATH += :$(FIRMWAREPATH)/crypto/$(CRYPTO_LIB):$(FIRMWAREPATH)/crypto/keccak
+EXTRAINCDIRS += $(FIRMWAREPATH)/crypto/$(CRYPTO_LIB) $(FIRMWAREPATH)/crypto/keccak
