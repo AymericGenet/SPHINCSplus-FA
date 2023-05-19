@@ -20,7 +20,7 @@ if __name__ == '__main__':
 		print(f"\tE[Non-id. chunks]")
 		for M in range(2,5):
 			unid_chunks = unidentied_chunks_number(spx.ell, spx.W, M)
-			print(f"\t\tM = {M}: {unid_chunks:.4f}/{spx.ell}")
+			print(f"\t\tM = {M}: {unid_chunks:.2f}/{spx.ell}")
 		print(f"\tGrafting hashes")
 		print(f"\t\tGrafting probability")
 		for logM in range(1,6):
