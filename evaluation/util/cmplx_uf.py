@@ -47,4 +47,16 @@ def xmss_grafting_hashes(hp, k, ell, M, t, W):
 # ------------------------------------------------------------------------------
 
 def path_seeking_hashes(h, hp, layer):
-	return 2**(h - hp*(layer+1))
+	"""Fix the tree index (tau), fix the leaf index (lambda) in this tree.
+
+	We want both the tree index and the leaf index to pass by the compromised
+	key pair. Given the layer l at which the key pair is compromised, we need
+	the h-hp*(l+1) first bits of the digest's address to be tau, then the
+	subsequent hp bits to be lambda. As a result, this amounts to:
+
+	    2^(h-hp*(layer+1))*2^hp = 2^(h-hp*layer) possible solutions.
+
+	On average, we need to perform this amount of hashes to get it right
+	(see: geometric random variable).
+	"""
+	return 2**(h - hp*layer)

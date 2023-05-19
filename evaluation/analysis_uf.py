@@ -35,7 +35,7 @@ if __name__ == '__main__':
 			x_graft_h = xmss_grafting_hashes(spx.hp, spx.k, spx.ell, 2**logM, 2**spx.log_t, spx.W)
 			print(f"\t\t\tM = {2**logM}: {x_graft_h:.4f} (2^{log2(x_graft_h):.2f})")
 		print(f"\tPath seeking hashes")
-		for layer in [0, 1, spx.d-2]:
+		for layer in [0, 1, spx.d-1]:
 			pseek_h = path_seeking_hashes(spx.h, spx.hp, layer)
 			print(f"\t\tl* = {layer}: {pseek_h} (2^{int(log2(pseek_h))})")
 		print(f"")
