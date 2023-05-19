@@ -13,7 +13,7 @@ M = 512
 LAYER_STAR = 7
 
 LOG_FILE_IN = "../chipwhisperer/logs/2022-09-05_09-34-30_SPHINCSplus_exp2.txt"
-RESULTS_FILE_OUT = datetime.now().strftime(f"data/%Y-%m-%d_%H-%M-%S_SPHINCSplus_results_exp2.txt")
+RESULTS_FILE_OUT = datetime.now().strftime(f"../chipwhisperer/logs/%Y-%m-%d_%H-%M-%S_SPHINCSplus_results_exp2.txt")
 
 # Pre-generated key pair for SPHINCS-shake-256s-robust
 skseed = b"\x07\xad\x58\xd9\xa7\xb1\xf8\x56\xa1\xc6\x64\xb8\x6f\xf2\xa7\x39\x05\xc4\xbe\x0a\x62\x82\x1e\x8a\x6a\x51\xe0\x34\x12\xfa\x89\x3a"
@@ -64,12 +64,12 @@ def results_cached(N, logfile, onscreen=False, logged=True):
 
 		if graft_p:
 			(adrs, proba) = max(graft_p, key=lambda p: p[1])
-			loginfo(f"Maximum grafting probability at 0x{hex(adrs)[2:].zfill(4)} = {proba} (2^{log2(proba) if proba != 0 else 'infty':.4f})", f_log=f_log, onscreen=onscreen)
+			loginfo(f"Maximum grafting probability at 0x{hex(adrs)[2:].zfill(4)} = {proba} (2^{log2(proba) if proba != 0 else -256:.4f})", f_log=f_log, onscreen=onscreen)
 
 			(adrs, proba) = min(graft_p, key=lambda p: p[1])
-			loginfo(f"Minimum grafting probability at 0x{hex(adrs)[2:].zfill(4)} = {proba} (2^{log2(proba) if proba != 0 else 'infty':.4f})", f_log=f_log, onscreen=onscreen)
+			loginfo(f"Minimum grafting probability at 0x{hex(adrs)[2:].zfill(4)} = {proba} (2^{log2(proba) if proba != 0 else -256:.4f})", f_log=f_log, onscreen=onscreen)
 
 		loginfo(f"="*100 + '\n\n', f_log=f_log, onscreen=onscreen)
 
 if __name__ == '__main__':
-	results_cached(N, LOG_FILE_IN, onscreen=True, logged=False)
+	results_cached(N, LOG_FILE_IN, onscreen=True, logged=True)

@@ -1,0 +1,58 @@
+i=0
+
+# of faulty signatures = 346 (vs 678 valid)
+# of faulty non-verifiable signatures = 83 (vs 263 verifiable)
+# of faulty non-verifiable signatures but correct = 1 (vs 82)
+Max load: 2
+Number of compromised W-OTS+: 1
+Maximum grafting probability at 0x5fa1 = 6.9210748094082875e-15 (2^-47.0379)
+Minimum grafting probability at 0x5fa1 = 6.9210748094082875e-15 (2^-47.0379)
+====================================================================================================
+
+
+i=1
+
+# of faulty signatures = 385 (vs 639 valid)
+# of faulty non-verifiable signatures = 90 (vs 295 verifiable)
+# of faulty non-verifiable signatures but correct = 2 (vs 88)
+Max load: 2
+Number of compromised W-OTS+: 1
+Maximum grafting probability at 0xc7f2 = 2.7760656056939816e-13 (2^-41.7120)
+Minimum grafting probability at 0xc7f2 = 2.7760656056939816e-13 (2^-41.7120)
+====================================================================================================
+
+
+i=2
+
+# of faulty signatures = 355 (vs 669 valid)
+# of faulty non-verifiable signatures = 91 (vs 264 verifiable)
+# of faulty non-verifiable signatures but correct = 1 (vs 90)
+Max load: 2
+Number of compromised W-OTS+: 3
+Maximum grafting probability at 0xc65a = 2.4496688530867376e-11 (2^-35.2486)
+Minimum grafting probability at 0xa879 = 1.8039340410431725e-15 (2^-48.9778)
+====================================================================================================
+
+
+i=3
+
+# of faulty signatures = 367 (vs 657 valid)
+# of faulty non-verifiable signatures = 112 (vs 255 verifiable)
+# of faulty non-verifiable signatures but correct = 4 (vs 108)
+Max load: 2
+Number of compromised W-OTS+: 5
+Maximum grafting probability at 0xee79 = 1.3241084595015937e-11 (2^-36.1362)
+Minimum grafting probability at 0x5c7e = 2.558546742461233e-15 (2^-48.4736)
+====================================================================================================
+
+
+i=4
+
+# of faulty signatures = 365 (vs 659 valid)
+# of faulty non-verifiable signatures = 94 (vs 271 verifiable)
+# of faulty non-verifiable signatures but correct = 1 (vs 93)
+Max load: 2
+Number of compromised W-OTS+: 1
+Maximum grafting probability at 0xe6b4 = 4.9178517860676776e-11 (2^-34.2432)
+Minimum grafting probability at 0xe6b4 = 4.9178517860676776e-11 (2^-34.2432)
+==================================================================================================== 

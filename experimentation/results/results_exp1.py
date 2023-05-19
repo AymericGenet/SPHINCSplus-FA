@@ -13,7 +13,7 @@ M = 1024
 LAYER_STAR = 6
 
 LOG_FILE_IN = "../chipwhisperer/logs/2022-07-29_10-34-56_SPHINCSplus.txt"
-RESULTS_FILE_OUT = datetime.now().strftime(f"data/%Y-%m-%d_%H-%M-%S_SPHINCSplus_results_exp1.txt")
+RESULTS_FILE_OUT = datetime.now().strftime(f"../chipwhisperer/logs/%Y-%m-%d_%H-%M-%S_SPHINCSplus_results_exp1.txt")
 
 # Pre-generated key pair for SPHINCS-shake-256s-robust
 skseed = b"\x07\xad\x58\xd9\xa7\xb1\xf8\x56\xa1\xc6\x64\xb8\x6f\xf2\xa7\x39\x05\xc4\xbe\x0a\x62\x82\x1e\x8a\x6a\x51\xe0\x34\x12\xfa\x89\x3a"
@@ -44,7 +44,7 @@ def results(N, logfile, onscreen=False, logged=True):
 		(correct, _) = check_correctness(spx, nonverif, LAYER_STAR)
 
 		# Derive results
-		(maxload, n_compromised, graft_p) = check_compromised(spx, sent, rcvd)
+		(maxload, n_compromised, graft_p) = check_compromised(spx, LAYER_STAR, sent, rcvd)
 
 		loginfo(f"# of faulty signatures = {len(faulty['send'])} (vs {batch_size-len(faulty['send'])} valid)", f_log=f_log, onscreen=onscreen)
 		loginfo(f"# of faulty non-verifiable signatures = {len(nonverif['send'])} (vs {len(faulty['send'])-len(nonverif['send'])} verifiable)", f_log=f_log, onscreen=onscreen)
@@ -55,12 +55,12 @@ def results(N, logfile, onscreen=False, logged=True):
 
 		if graft_p:
 			(adrs, proba) = max(graft_p, key=lambda p: p[1])
-			loginfo(f"Maximum grafting probability at 0x{hex(adrs)[2:].zfill(4)} = {proba} (2^{log2(proba) if proba != 0 else 'infty':.4f})", f_log=f_log, onscreen=onscreen)
+			loginfo(f"Maximum grafting probability at 0x{hex(adrs)[2:].zfill(4)} = {proba} (2^{log2(proba) if proba != 0 else 256:.4f})", f_log=f_log, onscreen=onscreen)
 
 			(adrs, proba) = min(graft_p, key=lambda p: p[1])
-			loginfo(f"Minimum grafting probability at 0x{hex(adrs)[2:].zfill(4)} = {proba} (2^{log2(proba) if proba != 0 else 'infty':.4f})", f_log=f_log, onscreen=onscreen)
+			loginfo(f"Minimum grafting probability at 0x{hex(adrs)[2:].zfill(4)} = {proba} (2^{log2(proba) if proba != 0 else 256:.4f})", f_log=f_log, onscreen=onscreen)
 
 		loginfo(f"="*100 + '\n\n', f_log=f_log, onscreen=onscreen)
 
 if __name__ == '__main__':
-	results(N, LOG_FILE_IN, onscreen=True, logged=False)
+	results(N, LOG_FILE_IN, onscreen=True, logged=True)

@@ -1,0 +1,130 @@
+i=0
+
+# of faulty signatures = 94 (vs 418 valid)
+# of faulty non-verifiable signatures = 15 (vs 79 verifiable)
+# of faulty non-verifiable signatures but correct = 0 (vs 15)
+Number of queries to recomputation: 325
+Max load: 2
+Number of compromised W-OTS+: 16
+Maximum grafting probability at 0x0036 = 2.5890264374724845e-11 (2^-35.1688)
+Minimum grafting probability at 0x00c0 = 6.842414053418195e-18 (2^-57.0202)
+====================================================================================================
+
+
+i=1
+
+# of faulty signatures = 100 (vs 412 valid)
+# of faulty non-verifiable signatures = 19 (vs 81 verifiable)
+# of faulty non-verifiable signatures but correct = 1 (vs 18)
+Number of queries to recomputation: 292
+Max load: 2
+Number of compromised W-OTS+: 13
+Maximum grafting probability at 0x00cf = 4.994865207771201e-10 (2^-30.8988)
+Minimum grafting probability at 0x00d0 = 1.9630008973129143e-16 (2^-52.1778)
+====================================================================================================
+
+
+i=2
+
+# of faulty signatures = 96 (vs 416 valid)
+# of faulty non-verifiable signatures = 17 (vs 79 verifiable)
+# of faulty non-verifiable signatures but correct = 0 (vs 17)
+Number of queries to recomputation: 309
+Max load: 2
+Number of compromised W-OTS+: 20
+Maximum grafting probability at 0x0045 = 1.6216052024448298e-10 (2^-32.5219)
+Minimum grafting probability at 0x00e3 = 8.416235281210296e-17 (2^-53.3996)
+====================================================================================================
+
+
+i=3
+
+# of faulty signatures = 102 (vs 410 valid)
+# of faulty non-verifiable signatures = 24 (vs 78 verifiable)
+# of faulty non-verifiable signatures but correct = 0 (vs 24)
+Number of queries to recomputation: 284
+Max load: 2
+Number of compromised W-OTS+: 16
+Maximum grafting probability at 0x003d = 3.3454782697352543e-10 (2^-31.4771)
+Minimum grafting probability at 0x00f5 = 1.2089812642670725e-17 (2^-56.1990)
+====================================================================================================
+
+
+i=4
+
+# of faulty signatures = 88 (vs 424 valid)
+# of faulty non-verifiable signatures = 17 (vs 71 verifiable)
+# of faulty non-verifiable signatures but correct = 0 (vs 17)
+Number of queries to recomputation: 329
+Max load: 2
+Number of compromised W-OTS+: 15
+Maximum grafting probability at 0x004d = 2.002880627713572e-09 (2^-28.8953)
+Minimum grafting probability at 0x0078 = 3.417937560460435e-16 (2^-51.3777)
+====================================================================================================
+
+
+i=5
+
+# of faulty signatures = 80 (vs 432 valid)
+# of faulty non-verifiable signatures = 9 (vs 71 verifiable)
+# of faulty non-verifiable signatures but correct = 0 (vs 9)
+Number of queries to recomputation: 355
+Max load: 2
+Number of compromised W-OTS+: 7
+Maximum grafting probability at 0x0096 = 1.709258710453172e-11 (2^-35.7678)
+Minimum grafting probability at 0x00bc = 4.3707777171907435e-16 (2^-51.0230)
+====================================================================================================
+
+
+i=6
+
+# of faulty signatures = 95 (vs 417 valid)
+# of faulty non-verifiable signatures = 15 (vs 80 verifiable)
+# of faulty non-verifiable signatures but correct = 1 (vs 14)
+Number of queries to recomputation: 367
+Max load: 2
+Number of compromised W-OTS+: 12
+Maximum grafting probability at 0x006a = 8.711727466845336e-10 (2^-30.0963)
+Minimum grafting probability at 0x0090 = 7.739768276236532e-16 (2^-50.1986)
+====================================================================================================
+
+
+i=7
+
+# of faulty signatures = 91 (vs 421 valid)
+# of faulty non-verifiable signatures = 11 (vs 80 verifiable)
+# of faulty non-verifiable signatures but correct = 0 (vs 11)
+Number of queries to recomputation: 354
+Max load: 2
+Number of compromised W-OTS+: 17
+Maximum grafting probability at 0x001f = 1.8397848115010422e-09 (2^-29.0178)
+Minimum grafting probability at 0x005a = 7.092238689982256e-16 (2^-50.3246)
+====================================================================================================
+
+
+i=8
+
+# of faulty signatures = 95 (vs 417 valid)
+# of faulty non-verifiable signatures = 21 (vs 74 verifiable)
+# of faulty non-verifiable signatures but correct = 0 (vs 21)
+Number of queries to recomputation: 312
+Max load: 2
+Number of compromised W-OTS+: 15
+Maximum grafting probability at 0x0085 = 1.6748299446348094e-11 (2^-35.7972)
+Minimum grafting probability at 0x008c = 1.2586420257212168e-16 (2^-52.8190)
+====================================================================================================
+
+
+i=9
+
+# of faulty signatures = 86 (vs 426 valid)
+# of faulty non-verifiable signatures = 15 (vs 71 verifiable)
+# of faulty non-verifiable signatures but correct = 0 (vs 15)
+Number of queries to recomputation: 374
+Max load: 2
+Number of compromised W-OTS+: 10
+Maximum grafting probability at 0x000b = 1.1556629236730243e-09 (2^-29.6886)
+Minimum grafting probability at 0x00bf = 0 (2^256.0000)
+====================================================================================================
+
+
