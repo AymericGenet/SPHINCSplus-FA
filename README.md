@@ -84,7 +84,7 @@ The following setup is required to reproduce the experiments:
 3. In your `chipwhisperer/` installation folder, compile the simpleserial-sphincsplus with the following commands:
 
     ```bash
-    $ cd hardware/victims/firmware/simpleserial-sphincsplus`
+    $ cd hardware/victims/firmware/simpleserial-sphincsplus
     $ make PLATFORM=CW308_STM32F4 CRYPTO_TARGET=SPHINCSplus
     ```
 
@@ -98,9 +98,12 @@ The following setup is required to reproduce the experiments:
 
     There are a few options in the `cwfaultexp.py` script that you may consider using, namely:
 
-    * `LOG_BY_DEFAULT=True`: Change it to `False` if you do not want the script to populate the `../logs` folder.
-    * `REFLASH=False`: Change it to `True` if you want to flash your firmware on your target (the script will prompt the path to the compiled firmware).
+    * `LOG_BY_DEFAULT = False`: Change it to `True` if you want the script to populate the `../logs` folder.
+    * `PRINT_BY_DEFAULT = True`: Change it to `False` if you do not want the script to print the experiment results on the console.
+    * `REFLASH = False`: Change it to `True` if you want to flash your firmware on your target (the script will prompt the path to the compiled firmware).
 
-    This script was initially meant to run in Jupyter, which you can simulate in a Python REPL by using the following command (after you mute the calls to `run_exp1()` and `run_exp2()`, as well as the `target.dis()` and `scope.dis()` at the end of the file):
+    This script was initially meant to run in Jupyter, which you can simulate in a Python REPL by using the following command (after you mute the calls to `run_exp1()` and `run_exp2()` at the end of the file):
 
     ```In [1]: exec(open("cwfaultexp.py").read())```
+
+    The script will still connect to the ChipWhisperer's target, with which you can play from the REPL.
