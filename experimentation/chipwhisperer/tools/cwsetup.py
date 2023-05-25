@@ -1,24 +1,37 @@
 import random
 import time
 import chipwhisperer as cw
+import os
 
 # Default options
 CRYPTO_TARGET='SPHINCSplus'
 PLATFORM='CW308_STM32F4'
 
-def chipwhisperersetup(fw_path="", CRYPTO_TARGET=CRYPTO_TARGET, SCOPETYPE='OPENADC', PLATFORM=PLATFORM):
+def chipwhisperersetup(fw_folder="", CRYPTO_TARGET=CRYPTO_TARGET, SCOPETYPE='OPENADC', PLATFORM=PLATFORM):
     """
     Connect to the ChipWhisperer and flash the simpleserial-sphincsplus firmware
     if provided a firmware path.
 
-    @input fw_path        Firmware path to simpleserial-sphincsplus (if none or
-                          empty, then no flashing will occur)
+    @input fw_folder      Firmware path to simpleserial-sphincsplus folder
+                          (if empty, then no flashing will occur)
     @input CRYPTO_TARGET  Should be 'SPHINCSplus'
     @input SCOPETYPE      Should be 'OPENADC'
     @input PLATFORM       Should be 'CW308_STM32F4'
     @output target  ChipWhisperer's target (target = cw.target(scope))
     @output scope   Chipwhisperer's scope (scope = cw.scope())
     """
+    # Sanity check to prevent accidental erasure of firmware
+    fw_path = ""
+    if fw_folder:
+        fw_path = os.path.join(fw_folder, f"simpleserial-{CRYPTO_TARGET.lower()}-{PLATFORM}.hex")
+        if not os.path.isfile(fw_path):
+            raise ValueError(f"""{fw_path} is not an existing file!
+    Either you did not provide the correct folder: {fw_folder},
+    or you did not compile the firmware with the following command:
+
+        make PLATFORM={PLATFORM} CRYPTO_TARGET={CRYPTO_TARGET}
+""")
+
     # Try to connect to chipwhisperer
     try:
         scope = cw.scope()

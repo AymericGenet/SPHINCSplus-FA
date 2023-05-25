@@ -10,9 +10,10 @@ from cwsetup import chipwhisperersetup, reset_target, randbytes, read_sig, log_i
 # =============================================================================
 # Constants and variables
 # =============================================================================
-# Log in a file
-LOG_BY_DEFAULT = True
+# Log in a file and on console
+LOG_BY_DEFAULT = False
 LOG_FOLDER = "../logs"
+PRINT_BY_DEFAULT = True
 
 # Default constants
 """
@@ -20,10 +21,10 @@ LOG_FOLDER = "../logs"
     'simpleserial-sphincsplus' folder of YOUR ChipWhisperer folder (i.e., after
     copying the content of the 'chipwhisper' folder of THIS repository):
 
-        `make PLATFORM=CW308_STM32F4 CRYPTO_TARGET=SPHINCSplus`
+        make PLATFORM=CW308_STM32F4 CRYPTO_TARGET=SPHINCSplus
 """
-#RECOMPILE=False
-REFLASH=False
+#RECOMPILE = False
+REFLASH = False
 
 # Program seed
 seed = "Preoccupied with a single leaf, you won't see the tree. Preoccupied with a single tree, you'll miss the entire forest."
@@ -55,7 +56,7 @@ skprf = randbytes(MSGLEN)
 
 forsmsg = randbytes(FORSMSGLEN) # Note: unused (from an unreported experiment)
 
-# Resulting root (from an execution of SPHINCSplus.py)
+# Resulting root (obtained from an independent execution of SPHINCSplus.py with above skseed, skprf, pkseed)
 pkroot = int.to_bytes(0xfc5429b364889d213a26d5a69986560179dac9c6e20d55f424cee9339179dae8, byteorder="big", length=PKLEN)
 
 # =============================================================================
@@ -63,15 +64,15 @@ pkroot = int.to_bytes(0xfc5429b364889d213a26d5a69986560179dac9c6e20d55f424cee933
 # =============================================================================
 
 # Path to SPHINCSplus compiled code
-fw_path = ""
+fw_folder = ""
 if REFLASH:
-    fw_path = input("Please enter path to 'simpleserial-sphincsplus' folder: ")
-    if not fw_path:
+    fw_folder = input("Please enter path to 'simpleserial-sphincsplus' folder: ")
+    if not fw_folder:
         print("Warning: no firmware path detected, skipping relfashing.")
 
-# Connects to chipwhisperer and reflash if fw_path is provided
+# Connects to chipwhisperer and reflash if fw_folder is provided
 print(f"Opening simpleserial-sphincsplus...")
-(target, scope) = chipwhisperersetup(fw_path)
+(target, scope) = chipwhisperersetup(fw_folder)
 
 # Increase clock frequency
 # STM32F4:
@@ -105,12 +106,6 @@ DURATION = 79
 # Experiment #2 - Cached branches
 # =============================================================================
 
-# Experiments parameters
-inplength = 2 # to hit layer 7 with addresses of 1 byte (second byte to have authpath of signed tree)
-N = 10 # 4 days
-M = 512 # goal: put valid/faulty in cache + evict + re-query in ~318 queries on average
-CACHE_SIZE = 171
-
 def fill_cache(target, scope, cached, f_log=None):
     """
     Fill the cache in the target device to match with local state of the cache.
@@ -122,7 +117,7 @@ def fill_cache(target, scope, cached, f_log=None):
     """
     cmd = 'q' # API to cache ('q': fill_cache)
     now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    log_info(f"{now}: Filling cache ...", f_log=f_log, p=False)
+    log_info(f"{now}: Filling cache ...", f_log=f_log, p=PRINT_BY_DEFAULT)
     for adrs in cached:
         filled = False
         inp = 6*b'\x00' + adrs + b'\x00'
@@ -133,13 +128,13 @@ def fill_cache(target, scope, cached, f_log=None):
                 filled = True
             except TimeoutError:
                 now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                log_info(f"{now}: TimeoutError when sending {adrs.hex()}! Resetting ...", f_log=f_log, p=False)
+                log_info(f"{now}: TimeoutError when sending {adrs.hex()}! Resetting ...", f_log=f_log, p=PRINT_BY_DEFAULT)
                 reset_target(scope) # Should have ideally found a way to restart from the beginning, but it always failed at the first address, so it was fine
                 target.flush()
     now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    log_info(f"{now}: Cache filled ! [{', '.join([c.hex() for c in cached])}]", f_log=f_log, p=False)
+    log_info(f"{now}: Cache filled ! [{', '.join([c.hex() for c in cached])}]", f_log=f_log, p=PRINT_BY_DEFAULT)
 
-def run_exp2(target, scope, inplength, N=N, M=M, CACHE_SIZE=CACHE_SIZE, logged=False):
+def run_exp2(target, scope, inplength, N, M, CACHE_SIZE, logged=False):
     """
     Run the second experiment reported in paper.
 
@@ -165,26 +160,26 @@ def run_exp2(target, scope, inplength, N=N, M=M, CACHE_SIZE=CACHE_SIZE, logged=F
 
     try:
         # Start experimentation
-        log_info(f"SPHINCSplus (256s, robust) glitch campaign launched", f_log=f_log, p=False)
-        log_info(f"N: {N}", f_log=f_log, p=False)
-        log_info(f"M: {M}", f_log=f_log, p=False)
-        log_info(f"="*80, f_log=f_log, p=False)
-        log_info(f"Clock speed: {scope.clock.clkgen_freq}", f_log=f_log, p=False)
-        log_info(f"Baud rate: {target.baud}", f_log=f_log, p=False)
-        log_info(f"="*80, f_log=f_log, p=False)
-        log_info(f"Glitch ext offset: {scope.glitch.ext_offset}", f_log=f_log, p=False)
-        log_info(f"Glitch clock offset: {scope.glitch.offset}", f_log=f_log, p=False)
-        log_info(f"Glitch width: {scope.glitch.width}", f_log=f_log, p=False)
-        log_info(f"Glitch source: {scope.glitch.clk_src}", f_log=f_log, p=False)
-        log_info(f"Glitch output: {scope.glitch.output}", f_log=f_log, p=False)
-        log_info(f"Glitch trigger source: {scope.glitch.trigger_src}", f_log=f_log, p=False)
-        log_info(f"="*80, f_log=f_log, p=False)
+        log_info(f"SPHINCSplus (256s, robust) glitch campaign launched", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"N: {N}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"M: {M}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"="*80, f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Clock speed: {scope.clock.clkgen_freq}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Baud rate: {target.baud}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"="*80, f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch ext offset: {scope.glitch.ext_offset}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch clock offset: {scope.glitch.offset}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch width: {scope.glitch.width}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch source: {scope.glitch.clk_src}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch output: {scope.glitch.output}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch trigger source: {scope.glitch.trigger_src}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"="*80, f_log=f_log, p=PRINT_BY_DEFAULT)
         
         ### LAUNCH CAMPAIGN (cached) ###
         for idx in range(N):
             # Preamble
             now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-            log_info(f"{now} ({idx+1:02d}/{N:02d}) Launching experiment", f_log=f_log, p=False)
+            log_info(f"{now} ({idx+1:02d}/{N:02d}) Launching experiment", f_log=f_log, p=PRINT_BY_DEFAULT)
             
             # Set up initial cache
             reset_target(scope)
@@ -197,7 +192,7 @@ def run_exp2(target, scope, inplength, N=N, M=M, CACHE_SIZE=CACHE_SIZE, logged=F
             collections = {}
 
             # Program secret seed
-            #simpleserial_logsend(target, 'k', skseed, preamble=f"({idx+1:02d}/{N:02d})", f_log=f_log, p=False)
+            #simpleserial_logsend(target, 'k', skseed, preamble=f"({idx+1:02d}/{N:02d})", f_log=f_log, p=PRINT_BY_DEFAULT)
 
             # LAUNCH GLITCHES
             for i in range(M):
@@ -213,7 +208,7 @@ def run_exp2(target, scope, inplength, N=N, M=M, CACHE_SIZE=CACHE_SIZE, logged=F
                 address = (int.from_bytes(inp, byteorder='big') >> SPHINCS_XMSS_HEIGHT) & (2**SPHINCS_XMSS_HEIGHT - 1)
                 
                 now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                log_info(f"{now}: [{i+1:04d}/{M}] Sending  ... {inp.hex()}, waiting {DURATION*(i/M)} sec ...", f_log=f_log, p=False)
+                log_info(f"{now}: [{i+1:04d}/{M}] Sending  ... {inp.hex()}, waiting {DURATION*(i/M)} sec ...", f_log=f_log, p=PRINT_BY_DEFAULT)
 
                 # 1. Send command
                 target.simpleserial_write(cmd, inp)
@@ -234,18 +229,18 @@ def run_exp2(target, scope, inplength, N=N, M=M, CACHE_SIZE=CACHE_SIZE, logged=F
                 val = target.read()
                 if len(val) >= 4:
                     now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                    log_info(f"{now}: [{i+1:04d}/{M}] CACHE HIT (STATUS={val[-2]}, HIT PREDICTION={predicted})!", f_log=f_log, p=False)
+                    log_info(f"{now}: [{i+1:04d}/{M}] CACHE HIT (STATUS={val[-2]}, HIT PREDICTION={predicted})!", f_log=f_log, p=PRINT_BY_DEFAULT)
                     if not predicted: # Should be True, if not => refill cache
-                        log_info(f"{now}: [{i+1:04d}/{M}] Cache mismatch, resetting ...", f_log=f_log, p=False)
+                        log_info(f"{now}: [{i+1:04d}/{M}] Cache mismatch, resetting ...", f_log=f_log, p=PRINT_BY_DEFAULT)
                         reset_target(scope)
                         target.flush()
                         fill_cache(target, scope, cached, f_log=f_log)
                     continue
                 else:
                     now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                    log_info(f"{now}: [{i+1:04d}/{M}] CACHE MISS (HIT PREDICTION={predicted})!", f_log=f_log, p=False)
+                    log_info(f"{now}: [{i+1:04d}/{M}] CACHE MISS (HIT PREDICTION={predicted})!", f_log=f_log, p=PRINT_BY_DEFAULT)
                     if predicted: # Should be False, if not => refill cache
-                        log_info(f"{now}: [{i+1:04d}/{M}] Cache mismatch, resetting ...", f_log=f_log, p=False)
+                        log_info(f"{now}: [{i+1:04d}/{M}] Cache mismatch, resetting ...", f_log=f_log, p=PRINT_BY_DEFAULT)
                         reset_target(scope)
                         target.flush()
                         fill_cache(target, scope, cached, f_log=f_log)
@@ -266,7 +261,7 @@ def run_exp2(target, scope, inplength, N=N, M=M, CACHE_SIZE=CACHE_SIZE, logged=F
 
                 if ret: # In case of time out => refill cache
                     now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                    log_info(f"{now}: [{i+1:04d}/{M}] TIMED OUT!", f_log=f_log, p=False)
+                    log_info(f"{now}: [{i+1:04d}/{M}] TIMED OUT!", f_log=f_log, p=PRINT_BY_DEFAULT)
                     reset_target(scope)
                     target.flush()
                     fill_cache(target, scope, cached, f_log=f_log)
@@ -276,38 +271,31 @@ def run_exp2(target, scope, inplength, N=N, M=M, CACHE_SIZE=CACHE_SIZE, logged=F
 
                     now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
                     if sig: # Collect signature
-                        log_info(f"{now}: [{i+1:04d}/{M}] Received ... {' '.join([s.hex() for s in sig])}", f_log=f_log, p=False)
+                        log_info(f"{now}: [{i+1:04d}/{M}] Received ... {' '.join([s.hex() for s in sig])}", f_log=f_log, p=PRINT_BY_DEFAULT)
                         if address in collections:
                             collections[address] += [sig]
                         else:
                             collections[address] = [sig]
                     else: # In case nothing is received => refill cache
-                        log_info(f"{now}: [{i+1:04d}/{M}] Received ... Nothing!", f_log=f_log, p=False)
+                        log_info(f"{now}: [{i+1:04d}/{M}] Received ... Nothing!", f_log=f_log, p=PRINT_BY_DEFAULT)
                         reset_target(scope)
                         target.flush()
                         fill_cache(target, scope, cached, f_log=f_log)
 
             # Log findings
             now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-            log_info(f"{now} ({idx+1:05d}/{N:05d}) Finished acquisition\n", f_log=f_log, p=False)
+            log_info(f"{now} ({idx+1:05d}/{N:05d}) Finished acquisition\n", f_log=f_log, p=PRINT_BY_DEFAULT)
 
     finally:
         if f_log:
             print(f"Closing {logfilename}...")
             f_log.close()
 
-run_exp2(target, scope, inplength, N=1, M=1, logged=LOG_BY_DEFAULT)
-
 # =============================================================================
 # Experiment #1 - Cached layers
 # =============================================================================
 
-# Experiments parameters
-inplength = 3 # to hit layer 6 with addresses of 2 byte (third byte to have authpath of signed tree)
-N = 5 # 5 days
-M = 1024 # goal: collect valid/faulty until collision in ~256 queries on average
-
-def run_exp1(target, scope, inplength, N=N, M=M, logged=False):
+def run_exp1(target, scope, inplength, N, M, logged=False):
     """
     Run the first experiment reported in paper.
 
@@ -332,31 +320,31 @@ def run_exp1(target, scope, inplength, N=N, M=M, logged=False):
         
     try:
         # Start experimentation
-        log_info(f"SPHINCSplus (256s, robust) glitch campaign launched", f_log=f_log, p=False)
-        log_info(f"N: {N}", f_log=f_log, p=False)
-        log_info(f"M: {M}", f_log=f_log, p=False)
-        log_info(f"="*80, f_log=f_log, p=False)
-        log_info(f"Clock speed: {scope.clock.clkgen_freq}", f_log=f_log, p=False)
-        log_info(f"Baud rate: {target.baud}", f_log=f_log, p=False)
-        log_info(f"="*80, f_log=f_log, p=False)
-        log_info(f"Glitch ext offset: {scope.glitch.ext_offset}", f_log=f_log, p=False)
-        log_info(f"Glitch clock offset: {scope.glitch.offset}", f_log=f_log, p=False)
-        log_info(f"Glitch width: {scope.glitch.width}", f_log=f_log, p=False)
-        log_info(f"Glitch source: {scope.glitch.clk_src}", f_log=f_log, p=False)
-        log_info(f"Glitch output: {scope.glitch.output}", f_log=f_log, p=False)
-        log_info(f"Glitch trigger source: {scope.glitch.trigger_src}", f_log=f_log, p=False)
-        log_info(f"="*80, f_log=f_log, p=False)
+        log_info(f"SPHINCSplus (256s, robust) glitch campaign launched", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"N: {N}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"M: {M}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"="*80, f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Clock speed: {scope.clock.clkgen_freq}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Baud rate: {target.baud}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"="*80, f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch ext offset: {scope.glitch.ext_offset}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch clock offset: {scope.glitch.offset}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch width: {scope.glitch.width}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch source: {scope.glitch.clk_src}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch output: {scope.glitch.output}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"Glitch trigger source: {scope.glitch.trigger_src}", f_log=f_log, p=PRINT_BY_DEFAULT)
+        log_info(f"="*80, f_log=f_log, p=PRINT_BY_DEFAULT)
 
         ### LAUNCH CAMPAIGN (straight) ###
         for idx in range(N):
             # Preamble
             now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-            log_info(f"{now} ({idx+1:02d}/{N:02d}) Launching experiment", f_log=f_log, p=False)
+            log_info(f"{now} ({idx+1:02d}/{N:02d}) Launching experiment", f_log=f_log, p=PRINT_BY_DEFAULT)
 
             collections = {}
 
             # Program secret seed
-            #simpleserial_logsend(target, 'k', skseed, preamble=f"({idx+1:02d}/{N:02d})", f_log=f_log, p=False)
+            #simpleserial_logsend(target, 'k', skseed, preamble=f"({idx+1:02d}/{N:02d})", f_log=f_log, p=PRINT_BY_DEFAULT)
 
             # LAUNCH GLITCHES
             for i in range(M):
@@ -372,7 +360,7 @@ def run_exp1(target, scope, inplength, N=N, M=M, logged=False):
                 address = (int.from_bytes(inp, byteorder='big') >> SPHINCS_XMSS_HEIGHT) & (2**SPHINCS_XMSS_HEIGHT - 1)
                 
                 now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                log_info(f"{now}: [{i+1:04d}/{M}] Sending  ... {inp.hex()}, waiting {DURATION*(i/M)} sec ...", f_log=f_log, p=False)
+                log_info(f"{now}: [{i+1:04d}/{M}] Sending  ... {inp.hex()}, waiting {DURATION*(i/M)} sec ...", f_log=f_log, p=PRINT_BY_DEFAULT)
 
                 # 1. Send command
                 target.simpleserial_write(cmd, inp)
@@ -391,7 +379,7 @@ def run_exp1(target, scope, inplength, N=N, M=M, logged=False):
 
                 if ret: # In case of time out
                     now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                    log_info(f"{now}: [{i+1:04d}/{M}] TIMED OUT!", f_log=f_log, p=False)
+                    log_info(f"{now}: [{i+1:04d}/{M}] TIMED OUT!", f_log=f_log, p=PRINT_BY_DEFAULT)
                     reset_target(scope)
                     target.flush()
                 else:
@@ -400,24 +388,22 @@ def run_exp1(target, scope, inplength, N=N, M=M, logged=False):
 
                     now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
                     if sig: # Collect signature
-                        log_info(f"{now}: [{i+1:04d}/{M}] Received ... {' '.join([s.hex() for s in sig])}", f_log=f_log, p=False)
+                        log_info(f"{now}: [{i+1:04d}/{M}] Received ... {' '.join([s.hex() for s in sig])}", f_log=f_log, p=PRINT_BY_DEFAULT)
                         if address in collections:
                             collections[address] += [sig]
                         else:
                             collections[address] = [sig]
                     else: # In case nothing is received
-                        log_info(f"{now}: [{i+1:04d}/{M}] Received ... Nothing!", f_log=f_log, p=False)
+                        log_info(f"{now}: [{i+1:04d}/{M}] Received ... Nothing!", f_log=f_log, p=PRINT_BY_DEFAULT)
 
             # Log findings
             now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-            log_info(f"{now} ({idx+1:05d}/{N:05d}) Finished acquisition\n", f_log=f_log, p=False)
+            log_info(f"{now} ({idx+1:05d}/{N:05d}) Finished acquisition\n", f_log=f_log, p=PRINT_BY_DEFAULT)
 
     finally:
         if f_log:
             print(f"Closing {logfilename}...")
             f_log.close()
-
-run_exp1(target, scope, inplength, N=1, M=1, logged=LOG_BY_DEFAULT)
 
 # =============================================================================
 # Experimental exploration
@@ -465,7 +451,7 @@ def run_exp_expl(logged=False):
                             reset_target(scope)
                             target.flush()
                         now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                        log_info(f"{now} lext={lext}, loff={loff}, lwid={lwid}: [{i+1:04d}/{TIMES}]", end=' ', f_log=f_log, p=False)
+                        log_info(f"{now} lext={lext}, loff={loff}, lwid={lwid}: [{i+1:04d}/{TIMES}]", end=' ', f_log=f_log, p=PRINT_BY_DEFAULT)
 
                         # Run glitch campaign
                         scope.arm()
@@ -474,13 +460,13 @@ def run_exp_expl(logged=False):
                         val = target.simpleserial_read_witherrors('r', 32, glitch_timeout=10)
 
                         if ret:
-                            log_info(f"TIMED OUT!", f_log=f_log, p=False)
+                            log_info(f"TIMED OUT!", f_log=f_log, p=PRINT_BY_DEFAULT)
                             collections['reset'] += [(lext, loff, lwid)]
                             reset_target(scope)
                             target.flush()
                         else:
                             if val['valid'] is False:
-                                log_info(f"INVALID!", f_log=f_log, p=False)
+                                log_info(f"INVALID!", f_log=f_log, p=PRINT_BY_DEFAULT)
                                 collections['reset'] += [(lext, loff, lwid)]
                                 reset_target(scope)
                                 target.flush()
@@ -489,10 +475,10 @@ def run_exp_expl(logged=False):
                                     payload = val['payload'].hex()
                                     if payload == exp_out:
                                         collections['valid'] += [(lext, loff, lwid)]
-                                        log_info(f"{payload} VALID", f_log=f_log, p=False)
+                                        log_info(f"{payload} VALID", f_log=f_log, p=PRINT_BY_DEFAULT)
                                     else:
                                         collections['faulty'] += [(lext, loff, lwid)]
-                                        log_info(f"{payload} FAULTY", f_log=f_log, p=False)
+                                        log_info(f"{payload} FAULTY", f_log=f_log, p=PRINT_BY_DEFAULT)
                                 else:
                                     collections['reset'] += [(lext, loff, lwid)]
                                     print(f"Nothing...")
@@ -501,10 +487,19 @@ def run_exp_expl(logged=False):
             print(f"Closing {logfilename}...")
             f_log.close()
 
-#run_exp_expl(logged=LOG_BY_DEFAULT)
+# =============================================================================
+# Experiments execution
+# =============================================================================
 
-# =============================================================================
-# The end (should have put that in a big finally but whatever)
-# =============================================================================
-target.dis()
-scope.dis()
+try:
+    # Run experiment 2 (~4 days)
+    run_exp2(target, scope, inplength=2, N=10, M=512, CACHE_SIZE=171, logged=LOG_BY_DEFAULT)
+
+    # Run experiment 1 (~5 days)
+    run_exp1(target, scope, inplength=3, N=5, M=1024, logged=LOG_BY_DEFAULT)
+
+    #run_exp_expl(logged=LOG_BY_DEFAULT)
+
+finally:
+    target.dis()
+    scope.dis()
